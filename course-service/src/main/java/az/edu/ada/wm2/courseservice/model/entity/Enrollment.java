@@ -12,6 +12,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(
@@ -35,4 +37,7 @@ public class Enrollment {
     @Column(name = "student_id", nullable = false)
     private Long studentId;
 
+    @CreationTimestamp
+    @Column(name = "enrollment_date", nullable = false, updatable = false)
+    private LocalDateTime enrollmentDate;
 }
