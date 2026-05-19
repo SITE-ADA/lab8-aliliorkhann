@@ -79,4 +79,11 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(response, status);
     }
+
+@ExceptionHandler(PrerequisiteNotMetException.class)
+    public ResponseEntity<ApiErrorResponse> handlePrerequisiteNotMet(
+            PrerequisiteNotMetException ex,
+            HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
+    }
 }

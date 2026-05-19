@@ -3,6 +3,7 @@ package az.edu.ada.wm2.courseservice.service;
 import az.edu.ada.wm2.courseservice.client.StudentFeignClient;
 import az.edu.ada.wm2.courseservice.exception.CourseNotFoundException;
 import az.edu.ada.wm2.courseservice.exception.EnrollmentAlreadyExistsException;
+import az.edu.ada.wm2.courseservice.exception.PrerequisiteNotMetException;
 import az.edu.ada.wm2.courseservice.exception.RemoteStudentNotFoundException;
 import az.edu.ada.wm2.courseservice.exception.StudentServiceCommunicationException;
 import az.edu.ada.wm2.courseservice.model.dto.CourseRequestDto;
@@ -78,8 +79,19 @@ public class CourseService {
 
     public EnrollmentResponseDto enrollStudent(Long courseId, Long studentId) {
         log.debug("Enrolling student {} into course {}", studentId, courseId);
-        findCourseOrThrow(courseId);
+        Course targetCourse = findCourseOrThrow(courseId);
 
+        // 1. Check if the course has a prerequisite
+        if (targetCourse.getPrerequisiteCourseId() != null) {
+            Long prereqId = targetCourse.getPrerequisiteCourseId();
+            // 2. Verify if the student is already enrolled in that prerequisite course
+            boolean hasCompletedPrereq = enrollmentRepository.existsByCourseIdAndStudentId(prereqId, studentId);
+            if (!hasCompletedPrereq) {
+                throw new PrerequisiteNotMetException(prereqId);
+            }
+        }
+
+        // 3. Keep existing validations
         if (enrollmentRepository.existsByCourseIdAndStudentId(courseId, studentId)) {
             throw new EnrollmentAlreadyExistsException(courseId, studentId);
         }

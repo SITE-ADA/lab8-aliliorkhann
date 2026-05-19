@@ -7,7 +7,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class ApiErrorResponse {
-
     private LocalDateTime timestamp;
     private int status;
     private String error;
