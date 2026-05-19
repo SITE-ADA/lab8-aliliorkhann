@@ -2,6 +2,7 @@ package az.edu.ada.wm2.studentservice.controller;
 
 import az.edu.ada.wm2.studentservice.model.dto.StudentRequestDto;
 import az.edu.ada.wm2.studentservice.model.dto.StudentResponseDto;
+import az.edu.ada.wm2.studentservice.repository.StudentRepository;
 import az.edu.ada.wm2.studentservice.service.StudentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "Students", description = "Student management endpoints")
 public class StudentController {
+    private final StudentRepository studentRepository;
 
     private final StudentService studentService;
 
@@ -60,4 +63,18 @@ public class StudentController {
         studentService.deleteStudent(id);
         return ResponseEntity.noContent().build();
     }
+
+    @io.swagger.v3.oas.annotations.Operation(
+    summary = "Tələbələri ada görə axtarmaq", 
+    description = "Ad və ya soyada görə uyğun gələn tələbələrin siyahısını qaytarır."
+)
+@GetMapping("/search")
+public ResponseEntity<List<StudentResponseDto>> searchStudentsByName(@RequestParam String name) {
+    List<StudentResponseDto> students = studentRepository
+        .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(name, name)
+        .stream()
+        .map(s -> new StudentResponseDto(s.getId(), s.getFirstName(), s.getLastName(), s.getEmail(), s.getAge()))
+        .toList();
+    return ResponseEntity.ok(students);
+}
 }

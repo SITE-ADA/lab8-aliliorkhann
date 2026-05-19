@@ -165,4 +165,32 @@ public class CourseService {
                 course.getCredits()
         );
     }
+
+    public List<CourseResponseDto> getCoursesByStudentName(String studentName) {
+        log.debug("Searching for courses associated with student name: {}", studentName);
+
+        // 1. Fetch matching students from student-service via Feign Client
+        List<StudentDto> matchingStudents = studentFeignClient.searchStudentsByName(studentName);
+        if (matchingStudents.isEmpty()) {
+            return List.of(); // Return empty list safely if no student matches
+        }
+
+        // 2. Extract their student IDs
+        List<Long> studentIds = matchingStudents.stream()
+                .map(StudentDto::getId)
+                .toList();
+
+        // 3. Find all enrollment records for these student IDs
+        List<Long> courseIds = enrollmentRepository.findByStudentIdIn(studentIds)
+                .stream()
+                .map(Enrollment::getCourseId)
+                .distinct()
+                .toList();
+
+        // 4. Look up course entity details and map to DTO responses
+        return courseRepository.findAllById(courseIds)
+                .stream()
+                .map(this::toCourseResponseDto)
+                .toList();
+    }
 }

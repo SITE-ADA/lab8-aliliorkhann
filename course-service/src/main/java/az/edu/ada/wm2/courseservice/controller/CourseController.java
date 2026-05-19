@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -82,5 +83,16 @@ public class CourseController {
     )
     public ResponseEntity<CourseStudentsResponseDto> getCourseStudents(@PathVariable Long courseId) {
         return ResponseEntity.ok(courseService.getCourseStudents(courseId));
+    }
+
+    @io.swagger.v3.oas.annotations.Operation(
+        summary = "Tələbə adına görə kursları gətirmək", 
+        description = "Daxil edilmiş ada sahib tələbənin qeydiyyatdan keçdiyi bütün kursların siyahısını qaytarır."
+    )
+    @GetMapping("/search")
+    public ResponseEntity<List<CourseResponseDto>> getCoursesByStudentName(
+            @io.swagger.v3.oas.annotations.Parameter(description = "Axtarılacaq tələbə adı və ya soyadı")
+            @RequestParam String studentName) {
+        return ResponseEntity.ok(courseService.getCoursesByStudentName(studentName));
     }
 }
